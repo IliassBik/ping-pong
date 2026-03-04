@@ -88,21 +88,22 @@ function applyPowerUp(type, hitter) {
             break;
 
         case 'SHRINK_ENEMY':
-            const enemyOriginal = enemy.height;
-            const shrinkHeight = Math.max(enemy.height * 0.5, 40);
-            enemy.height = shrinkHeight;
+            let other = target === player ? ai : player;
+            const enemyOriginal = other.height;
+            const shrinkHeight = Math.max(other.height * 0.5, 40 * scaleY);
+            other.height = shrinkHeight;
             popupText = hitter === 'player' ? "ENEMY SHRUNK!" : "PADDLE SHRUNK!";
             popupColor = "#ff007f";
 
             let sid = setTimeout(() => {
-                enemy.height = enemyOriginal;
-                if (enemy.y + enemy.height > canvas.height) enemy.y = canvas.height - enemy.height;
+                other.height = enemyOriginal;
+                if (other.y + other.height > canvas.height) other.y = canvas.height - other.height;
             }, 10000);
             powerUpTimeouts.push(sid);
             break;
 
         case 'FAST_BALL':
-            ball.speed += 4;
+            ball.speed += 4 * scaleX;
             const angleFast = Math.atan2(ball.velocityY, ball.velocityX);
             ball.velocityX = ball.speed * Math.cos(angleFast);
             ball.velocityY = ball.speed * Math.sin(angleFast);
@@ -111,7 +112,7 @@ function applyPowerUp(type, hitter) {
             break;
 
         case 'SLOW_BALL':
-            ball.speed = Math.max(ball.speed * 0.5, 3); // Slow down, but don't stall
+            ball.speed = Math.max(ball.speed * 0.5, 3 * scaleX); // Slow down, but don't stall
             const angleSlow = Math.atan2(ball.velocityY, ball.velocityX);
             ball.velocityX = ball.speed * Math.cos(angleSlow);
             ball.velocityY = ball.speed * Math.sin(angleSlow);
