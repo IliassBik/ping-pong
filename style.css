@@ -392,6 +392,8 @@ canvas {
     box-shadow: var(--glow);
     display: block;
     cursor: none;
+    touch-action: none;
+    /* Prevent default touch actions like scroll/zoom */
 }
 
 .score-display {

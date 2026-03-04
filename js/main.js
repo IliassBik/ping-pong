@@ -27,8 +27,8 @@ function gameLoop() {
 // Control player paddle with mouse
 canvas.addEventListener('mousemove', (e) => {
     let rect = canvas.getBoundingClientRect();
-    let root = document.documentElement;
-    let mouseY = e.clientY - rect.top - root.scrollTop;
+    let scaleY = canvas.height / rect.height; // Scale relative to CSS size
+    let mouseY = (e.clientY - rect.top) * scaleY;
 
     // Move paddle and keep it within bounds
     if (isTwoPlayer && isGameRunning) return; // Disable mouse in 2P for balance
@@ -41,6 +41,101 @@ canvas.addEventListener('mousemove', (e) => {
     }
     player.y = newY;
 });
+
+// Map touch coordinates to internal canvas coordinates (handle CSS scaling)
+function getTouchY(touch) {
+    let rect = canvas.getBoundingClientRect();
+    let scaleY = canvas.height / rect.height;
+    return (touch.clientY - rect.top) * scaleY;
+}
+function getTouchX(touch) {
+    let rect = canvas.getBoundingClientRect();
+    let scaleX = canvas.width / rect.width;
+    return (touch.clientX - rect.left) * scaleX;
+}
+
+let activeTouches = {};
+
+canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault(); // Prevent scrolling/zooming
+
+    for (let i = 0; i < e.changedTouches.length; i++) {
+        let touch = e.changedTouches[i];
+        let touchX = getTouchX(touch);
+
+        // If it's a serve trigger
+        if (isGameRunning && isServing) {
+            if (!isTwoPlayer && serveTurn === 'player') {
+                launchServe();
+            } else if (isTwoPlayer) {
+                // If touching left side, serve P1. If touching right side, serve P2
+                if (touchX < canvas.width / 2 && serveTurn === 'player') {
+                    launchServe();
+                } else if (touchX >= canvas.width / 2 && serveTurn === 'ai') {
+                    launchServe();
+                }
+            }
+        }
+
+        activeTouches[touch.identifier] = touch;
+        updatePaddleFromTouch(touch);
+    }
+}, { passive: false });
+
+canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    for (let i = 0; i < e.changedTouches.length; i++) {
+        let touch = e.changedTouches[i];
+        activeTouches[touch.identifier] = touch;
+        updatePaddleFromTouch(touch);
+    }
+}, { passive: false });
+
+canvas.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    for (let i = 0; i < e.changedTouches.length; i++) {
+        let touch = e.changedTouches[i];
+        delete activeTouches[touch.identifier];
+    }
+}, { passive: false });
+
+canvas.addEventListener('touchcancel', (e) => {
+    e.preventDefault();
+    for (let i = 0; i < e.changedTouches.length; i++) {
+        let touch = e.changedTouches[i];
+        delete activeTouches[touch.identifier];
+    }
+}, { passive: false });
+
+function updatePaddleFromTouch(touch) {
+    if (!isGameRunning) return;
+
+    let touchX = getTouchX(touch);
+    let touchY = getTouchY(touch);
+
+    if (isTwoPlayer) {
+        // Left side controls P1
+        if (touchX < canvas.width / 2) {
+            let newY = touchY - player.height / 2;
+            if (newY < 0) newY = 0;
+            if (newY + player.height > canvas.height) newY = canvas.height - player.height;
+            player.y = newY;
+        }
+        // Right side controls P2 (ai block)
+        else {
+            let newY = touchY - ai.height / 2;
+            if (newY < 0) newY = 0;
+            if (newY + ai.height > canvas.height) newY = canvas.height - ai.height;
+            ai.y = newY;
+        }
+    } else {
+        // Single player mode, anywhere controls P1
+        let newY = touchY - player.height / 2;
+        if (newY < 0) newY = 0;
+        if (newY + player.height > canvas.height) newY = canvas.height - player.height;
+        player.y = newY;
+    }
+}
 
 // Click to serve
 canvas.addEventListener('mousedown', () => {

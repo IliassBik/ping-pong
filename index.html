@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Prism Pong</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600&display=swap"
@@ -11,6 +12,16 @@
 </head>
 
 <body>
+    <!-- Mobile device rotation prompt -->
+    <div id="rotateOverlay" class="rotate-overlay hidden">
+        <div class="rotate-content">
+            <div class="rotate-icon">📱➡️📳</div>
+            <h2 style="font-size: 1.2rem;">Rotate Device</h2>
+            <p style="font-size: 0.8rem; font-family: 'Inter', sans-serif;">Prism Pong is best played in landscape mode.
+            </p>
+        </div>
+    </div>
+
     <style>
         @keyframes spin-sync {
             100% {
