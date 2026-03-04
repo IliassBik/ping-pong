@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prism Pong</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <style>
+        @keyframes spin-sync {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+    <div id="syncIcon" class="hidden"
+        style="position: absolute; top: 15px; right: 15px; font-size: 1.5rem; text-shadow: 0 0 10px #00ffcc; z-index: 100; animation: spin-sync 1s linear infinite;">
+        🔄</div>
+    <div class="game-container">
+        <canvas id="gameCanvas" width="1280" height="720"></canvas>
+        <div class="score-display hidden">
+            <span id="playerScore">0</span>
+            <span id="aiScore">0</span>
+        </div>
+
+        <!-- In-Game Settings Button -->
+        <button id="btnOpenSettings" class="icon-btn in-game-btn hidden">⚙️</button>
+
+        <div class="overlay" id="startOverlay">
+            <h1>Prism Pong</h1>
+
+            <!-- Wide Textured Dashboard Card -->
+            <div id="mainMenuCard" class="dashboard-panel texture-dots">
+
+                <!-- Header: Branding, Profile & Economy -->
+                <div class="dashboard-header" style="justify-content: space-between;">
+                    <div class="dashboard-brand" style="font-size: 1.2rem;">PRISM PONG</div>
+
+                    <!-- New Level / XP Badge (Ergonomically Redesigned) -->
+                    <div id="playerProfileBadge"
+                        style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); border: 2px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 10px 20px; margin: 0 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+                        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 8px;">
+                            <span style="font-size: 0.8rem; color: #ccc; font-family: 'Press Start 2P';">LVL</span>
+                            <span id="badgeLevelNum"
+                                style="font-size: 1.6rem; color: #fff; font-weight: bold; text-shadow: 0 0 10px rgba(255,255,255,0.5);">1</span>
+                            <span id="badgeTitle"
+                                style="font-size: 0.85rem; color: #00ffcc; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; text-shadow: 0 0 5px #00ffcc;">Rookie</span>
+                        </div>
+                        <div
+                            style="width: 180px; height: 16px; background: rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center;">
+                            <div id="badgeXpFill"
+                                style="position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: linear-gradient(90deg, #0088ff, #00ffcc); box-shadow: 0 0 10px #00ffcc; transition: width 0.3s ease;">
+                            </div>
+                            <span id="badgeXpText"
+                                style="position: relative; z-index: 2; font-size: 0.6rem; font-family: 'Press Start 2P'; color: #fff; text-shadow: 1px 1px 2px #000;">0
+                                / 100 XP</span>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 15px; align-items: center;">
+                        <div id="coinDisplay" class="coin-display" style="margin: 0; font-size: 1rem; padding: 0;">
+                            🪩 <span id="coinCount">0</span> COINS
+                        </div>
+                        <button id="btnShowStore" class="meta-nav-btn" style="border-color: gold; color: gold;">
+                            🛒 STORE
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Body: 2 Columns -->
+                <div class="dashboard-body">
+
+                    <!-- LEFT COLUMN: Game Modes -->
+                    <div class="dashboard-col">
+                        <div class="panel-tag">Play Modes</div>
+
+                        <div class="mode-btn-container">
+                            <div id="btnStartAdventure" class="mode-btn adventure">
+                                <h4>ADVENTURE</h4>
+                                <p>Campaign Mode</p>
+                            </div>
+                            <div id="btnStartSurvival" class="mode-btn survival">
+                                <h4>SURVIVAL</h4>
+                                <p>Endless Rally</p>
+                            </div>
+                        </div>
+
+                        <div class="mode-btn-container" style="margin-top: -5px;">
+                            <div id="btnStartGame" class="mode-btn" style="border-color: var(--primary-color);">
+                                <h4>CUSTOM 1P</h4>
+                                <p>vs AI</p>
+                            </div>
+                            <div id="btnStartTwoPlayer" class="mode-btn" style="border-color: var(--secondary-color);">
+                                <h4>CUSTOM 2P</h4>
+                                <p>Local Co-op</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN: Rules -->
+                    <div class="dashboard-col texture-carbon" style="border-color: #333;">
+                        <div class="panel-tag" style="background: #111; color: #888; border-color: #444;">Match Rules
+                        </div>
+
+                        <div style="display: flex; gap: 20px; flex: 1; align-items: center;">
+                            <div style="flex: 1;">
+                                <label
+                                    style="display: block; font-size: 0.75rem; margin-bottom: 12px; color: #888; font-family: 'Press Start 2P';">DIFFICULTY</label>
+                                <div class="difficulty-buttons">
+                                    <button id="btnEasy" class="selected">E</button>
+                                    <button id="btnMedium">M</button>
+                                    <button id="btnHard">H</button>
+                                </div>
+                            </div>
+                            <div style="flex: 1;">
+                                <label
+                                    style="display: block; font-size: 0.75rem; margin-bottom: 12px; color: #888; font-family: 'Press Start 2P';">PADDLE</label>
+                                <div class="paddle-buttons">
+                                    <button id="paddleSmall">S</button>
+                                    <button id="paddleNormal" class="selected">M</button>
+                                    <button id="paddleLarge">L</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px;">
+                            <label
+                                style="margin: 0; font-size: 0.75rem; color: #888; font-family: 'Press Start 2P';">WIN
+                                SCORE</label>
+                            <input type="number" id="winScore" value="5" min="1" max="21"
+                                style="width: 70px; text-align: center; padding: 10px; font-size: 1.1rem; background: rgba(0,0,0,0.8); border: 2px solid #555; border-radius: 8px; color: #fff;">
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Footer: Meta Navigation -->
+                <div class="dashboard-footer">
+                    <div class="meta-nav">
+                        <button id="btnShowThemes" class="meta-nav-btn" title="Themes">🎨 THEMES</button>
+                        <button id="btnShowSkins" class="meta-nav-btn" title="Skins">👕 SKINS</button>
+                        <button id="btnShowAchievements" class="meta-nav-btn" title="Trophies">🏆 TROPHIES</button>
+                        <button id="btnShowStats" class="meta-nav-btn" title="Stats">📊 STATS</button>
+                    </div>
+                    <div class="meta-nav">
+                        <button id="btnShowHelp" class="meta-nav-btn" title="Help">❓ HELP</button>
+                        <button id="btnMenuSettings" class="meta-nav-btn" title="Settings">⚙️ SETTINGS</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Game Over Overlay (COMPLETELY SEPARATE from main menu overlay) -->
+        <div id="gameOverOverlay" class="overlay hidden" style="z-index: 30; background: rgba(0,0,0,0.88);">
+            <div class="menu-card" style="max-width: 460px; text-align: center; align-items: center; gap: 22px;">
+                <div id="gameOverTitle" style="font-size: 2rem; color: var(--primary-color); text-shadow: var(--glow);">
+                    GAME OVER</div>
+                <div id="gameOverStats"
+                    style="font-family: 'Inter', sans-serif; font-size: 1rem; color: #ccc; line-height: 2;"></div>
+                <button id="btnRetryGame" class="start-btn"
+                    style="width: 100%; padding: 18px; font-size: 1rem;">RETRY</button>
+                <button id="btnBackToMenu" class="menu-btn" style="width: 100%; padding: 12px;">BACK TO
+                    MENU</button>
+            </div>
+        </div>
+
+        <!-- Achievements Modal -->
+        <div id="achievementsModal" class="modal hidden">
+            <div class="modal-content">
+                <h2>Achievements</h2>
+                <div id="achievementsList" class="achievements-list">
+                    <!-- Injected by JS -->
+                </div>
+                <button id="btnCloseAchievements" class="menu-btn">CLOSE</button>
+            </div>
+        </div>
+
+        <!-- Skins Modal -->
+        <div id="skinsModal" class="modal hidden">
+            <div class="modal-content">
+                <h2>Select Your Skins</h2>
+
+                <div style="width: 100%; text-align: left; margin-bottom: 20px;">
+                    <h3 style="color: #eee; margin-bottom: 10px;">Paddle Color</h3>
+                    <div id="paddleSkinsGrid" class="skins-grid"></div>
+                </div>
+
+                <div style="width: 100%; text-align: left; margin-bottom: 20px;">
+                    <h3 style="color: #eee; margin-bottom: 10px;">Ball Color</h3>
+                    <div id="ballSkinsGrid" class="skins-grid"></div>
+                </div>
+
+                <button id="btnCloseSkins" class="menu-btn">CLOSE</button>
+            </div>
+        </div>
+
+        <!-- Store Modal -->
+        <div id="storeModal" class="modal hidden">
+            <div class="modal-content" style="width: 900px; max-width: 95vw; max-height: 90vh; overflow-y: auto;">
+                <div
+                    style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 20px; background: rgba(0,0,0,0.5); padding: 12px 25px; border-radius: 50px; border: 1px solid gold; width: 100%; box-sizing: border-box;">
+                    <h2
+                        style="color: gold; text-shadow: 0 0 8px gold; margin: 0; font-size: 1rem; letter-spacing: 2px;">
+                        CRYSTAL SHOP</h2>
+                    <div
+                        style="font-family: 'Press Start 2P'; color: gold; font-size: 0.6rem; background: rgba(255,215,0,0.1); padding: 8px 15px; border-radius: 20px;">
+                        <span id="storeCoinCount" style="font-size: 0.9rem; vertical-align: middle;">0</span> <span
+                            style="font-size: 0.5rem; opacity: 0.8;">COINS</span>
+                    </div>
+                </div>
+
+                <div class="shop-tabs">
+                    <button class="shop-tab active" onclick="switchShopTab('ball')">BALL TRAILS</button>
+                    <button class="shop-tab" onclick="switchShopTab('paddle')">PADDLE AURAS</button>
+                </div>
+
+                <div id="storeGrid" class="shop-grid">
+                    <!-- Injected by JS -->
+                </div>
+
+                <button id="btnCloseStore" class="menu-btn" style="margin-top: 30px; width: 200px;">EXIT
+                    SHOP</button>
+            </div>
+        </div>
+
+
+        <!-- In-Game Settings Modal -->
+        <div id="settingsModal" class="modal hidden">
+            <div class="modal-content">
+                <h2>Settings (Paused)</h2>
+
+                <div class="menu-options" style="margin-bottom: 30px; width: 100%;">
+                    <div class="option-group">
+                        <label>Audio:</label>
+                        <div class="difficulty-buttons" style="margin-bottom: 10px;">
+                            <button id="btnToggleSound" class="selected">SOUND: ON</button>
+                        </div>
+                        <div class="difficulty-buttons">
+                            <button id="btnToggleMusic" class="selected">MUSIC: ON</button>
+                        </div>
+                        <div class="difficulty-buttons" style="margin-top: 10px;">
+                            <button id="btnToggleShake" class="selected">SHAKE: ON</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="menu-options" style="margin-bottom: 30px; width: 100%;">
+                    <div class="option-group">
+                        <label>Display:</label>
+                        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                            <select id="selectResolution"
+                                style="flex: 1; padding: 10px; background: var(--canvas-bg); color: var(--text-color); border: 2px solid var(--primary-color); font-family: 'Press Start 2P';">
+                                <option value="800x600">800x600</option>
+                                <option value="1000x600">1000x600</option>
+                                <option value="1280x720" selected>1280x720</option>
+                                <option value="fullscreen">Fullscreen</option>
+                            </select>
+                        </div>
+                        <div class="difficulty-buttons">
+                            <button id="btnToggleQuality" class="selected">QUALITY: HIGH</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="menu-options" style="margin-bottom: 30px; width: 100%;">
+                    <div class="option-group">
+                        <label>Controls (Click to Rebind):</label>
+                        <div style="display: flex; gap: 10px; font-size: 0.8rem; margin-bottom: 10px; color: #aaa;">
+                            <div style="flex: 1; text-align: left;">PLAYER 1</div>
+                            <div style="flex: 1; text-align: left;">PLAYER 2</div>
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-bottom: 5px;">
+                            <button id="btnBindP1Up" class="menu-btn"
+                                style="flex: 1; padding: 5px; font-size: 0.7rem;">UP: W</button>
+                            <button id="btnBindP2Up" class="menu-btn"
+                                style="flex: 1; padding: 5px; font-size: 0.7rem;">UP: ArrowUp</button>
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-bottom: 5px;">
+                            <button id="btnBindP1Down" class="menu-btn"
+                                style="flex: 1; padding: 5px; font-size: 0.7rem;">DOWN: S</button>
+                            <button id="btnBindP2Down" class="menu-btn"
+                                style="flex: 1; padding: 5px; font-size: 0.7rem;">DOWN: ArrowDown</button>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button id="btnBindP1Serve" class="menu-btn"
+                                style="flex: 1; padding: 5px; font-size: 0.7rem;">SERVE: Space</button>
+                            <button id="btnBindP2Serve" class="menu-btn"
+                                style="flex: 1; padding: 5px; font-size: 0.7rem;">SERVE: Enter</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="menu-options" style="margin-bottom: 30px; width: 100%;">
+                    <div class="option-group">
+                        <label>Data Backup (Cloud / Transfer):</label>
+                        <div
+                            style="font-size: 0.7rem; color: #aaa; margin-bottom: 15px; text-transform: none; line-height: 1.4;">
+                            Protect your LocalStorage saves from browser cache clears. Backup your profile code and
+                            restore it anywhere.
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                            <button id="btnGenerateCode" class="menu-btn"
+                                style="flex: 1; border-color: #00ffcc; color: #00ffcc;">GET TRANSFER CODE</button>
+                            <button id="btnRestoreCode" class="menu-btn"
+                                style="flex: 1; border-color: gold; color: gold;">RESTORE FROM CODE</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="main-buttons"
+                    style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; width: 100%;">
+                    <button id="btnResumeGame" class="start-btn" style="animation: none;">RESUME GAME</button>
+                    <button id="btnExitGame" class="menu-btn"
+                        style="border-color: #ff0055; color: #ff0055; margin-top: 10px;">QUIT TO MENU</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="achievementPopup" class="achievement-popup hidden">
+            <div class="achievement-icon">🏆</div>
+            <div class="achievement-text">
+                <div class="achievement-title">Achievement Unlocked!</div>
+                <div class="achievement-desc" id="achievementDesc">First Point!</div>
+            </div>
+        </div>
+
+        <!-- Adventure Modal -->
+        <div id="adventureModal" class="modal hidden">
+            <div class="modal-content" style="max-width: 800px; width: 90vw;">
+                <h2>Adventure Mode</h2>
+                <div id="adventureGrid" class="skins-grid"
+                    style="grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px;">
+                    <!-- Injected by JS -->
+                </div>
+                <button id="btnCloseAdventure" class="menu-btn" style="margin-top: 20px;">CLOSE</button>
+            </div>
+        </div>
+
+        <!-- Adventure Level Briefing Modal -->
+        <div id="briefingModal" class="modal hidden">
+            <div class="modal-content" style="max-width: 500px; text-align: center;">
+                <h2 id="briefingTitle" style="color: #4a00e0; margin-bottom: 5px;">Level X</h2>
+                <h3 id="briefingSubtitle" style="color: #fff; margin-bottom: 20px; font-size: 1.2rem;">Title</h3>
+
+                <div style="background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <div style="color: #00ffcc; margin-bottom: 10px; font-weight: bold;">OBJECTIVE</div>
+                    <div id="briefingObjective" style="color: #fff; font-size: 1.5rem; margin-bottom: 20px;">First
+                        to X
+                        Points</div>
+
+                    <div style="color: #ff0055; margin-bottom: 10px; font-weight: bold;">MODIFIER</div>
+                    <div id="briefingModifier" style="color: #ccc; font-size: 1rem; line-height: 1.4;">Description
+                        here
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 15px;">
+                    <button id="btnCancelBriefing" class="menu-btn" style="flex: 1;">BACK</button>
+                    <button id="btnStartBriefingLevel" class="start-btn"
+                        style="flex: 2; background-color: #4a00e0;">START</button>
+                </div>
+            </div>
+        </div>
+        <!-- Themes Modal -->
+        <div id="themesModal" class="modal hidden">
+            <div class="modal-content" style="max-width: 500px;">
+                <h2 style="color: var(--primary-color); text-shadow: var(--glow);">CHOOSE THEME</h2>
+                <div class="themes-grid"
+                    style="display: grid; grid-template-columns: 1fr; gap: 15px; width: 100%; margin-bottom: 20px;">
+                    <div class="theme-card" data-theme="prism"
+                        style="background: rgba(0,229,255,0.1); border: 2px solid #00e5ff; padding: 15px; border-radius: 12px; cursor: pointer; text-align: center;">
+                        <div style="font-size: 1.2rem; color: #00e5ff; margin-bottom: 5px;">PRISM</div>
+                        <div style="font-size: 0.7rem; color: #ccc;">Neon, Glow, High-Tech</div>
+                    </div>
+                    <div class="theme-card" data-theme="retro"
+                        style="background: rgba(255,255,255,0.05); border: 2px solid #555; padding: 15px; border-radius: 12px; cursor: pointer; text-align: center;">
+                        <div style="font-size: 1.2rem; color: #00ff00; margin-bottom: 5px;">RETRO</div>
+                        <div style="font-size: 0.7rem; color: #ccc;">8-Bit, CRT Green, Classic</div>
+                    </div>
+                    <div class="theme-card" data-theme="jungle"
+                        style="background: rgba(76,175,80,0.1); border: 2px solid #4caf50; padding: 15px; border-radius: 12px; cursor: pointer; text-align: center;">
+                        <div style="font-size: 1.2rem; color: #4caf50; margin-bottom: 5px;">JUNGLE</div>
+                        <div style="font-size: 0.7rem; color: #ccc;">Nature, Vines, Wild</div>
+                    </div>
+                </div>
+                <button id="btnCloseThemes" class="menu-btn" style="width: 100%;">CLOSE</button>
+            </div>
+        </div>
+
+        <!-- Statistics Modal -->
+        <div id="statsModal" class="modal hidden">
+            <div class="modal-content" style="max-width: 550px; text-align: center; padding: 30px;">
+                <h2
+                    style="color: #00ffcc; margin-bottom: 20px; font-family: 'Press Start 2P'; font-size: 1.2rem; text-shadow: 0 0 10px #00ffcc;">
+                    SESSION STATISTICS</h2>
+
+                <div id="statsContent" style="width: 100%;">
+                    <!-- Stats dynamically injected by ui.js -->
+                </div>
+
+                <button id="btnCloseStats" class="menu-btn" style="margin-top: 20px; width: 200px;">CLOSE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal hidden">
+        <div class="modal-content"
+            style="max-width: 600px; text-align: left; align-items: flex-start; max-height: 85vh; overflow-y: auto;">
+            <h2 style="color: var(--primary-color); width: 100%; text-align: center; margin-bottom: 25px;">HOW TO
+                PLAY</h2>
+
+            <div style="width: 100%; margin-bottom: 30px;">
+                <div
+                    style="color: gold; font-family: 'Press Start 2P'; font-size: 0.6rem; margin-bottom: 15px; text-align: center;">
+                    🎮 BALANCED CONTROLS</div>
+
+                <div class="help-grid">
+                    <div class="help-player-box">
+                        <h4 class="p1-title">PLAYER 1</h4>
+                        <div class="kbd-row"><span class="kbd-key">W</span></div>
+                        <div class="kbd-row"><span class="kbd-key">S</span></div>
+                        <div style="margin-top: 15px; font-size: 0.7rem; color: #aaa;">SERVE</div>
+                        <div class="kbd-row" style="margin-top: 5px;"><span class="kbd-key"
+                                style="min-width: 80px;">SPACE</span></div>
+                    </div>
+
+                    <div class="help-player-box">
+                        <h4 class="p2-title">PLAYER 2</h4>
+                        <div class="kbd-row"><span class="kbd-key">↑</span></div>
+                        <div class="kbd-row"><span class="kbd-key">↓</span></div>
+                        <div style="margin-top: 15px; font-size: 0.7rem; color: #aaa;">SERVE</div>
+                        <div class="kbd-row" style="margin-top: 5px;"><span class="kbd-key"
+                                style="min-width: 80px;">ENTER</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="width: 100%; margin-bottom: 30px;">
+                <div
+                    style="color: gold; font-family: 'Press Start 2P'; font-size: 0.6rem; margin-bottom: 15px; text-align: center;">
+                    🌟 GAMEPLAY MECHANICS</div>
+
+                <div class="help-powerups-list">
+                    <div class="help-powerup-item">
+                        <div class="help-pu-icon" style="color: #00ffff; box-shadow: 0 0 10px #00ffff;">⚡</div>
+                        <div class="help-pu-details">
+                            <div class="help-pu-title">FAST BALL</div>
+                            <div class="help-pu-desc">Increases the ball's speed significantly. React fast!</div>
+                        </div>
+                    </div>
+                    <div class="help-powerup-item">
+                        <div class="help-pu-icon" style="color: #4caf50; box-shadow: 0 0 10px #4caf50;">🟩</div>
+                        <div class="help-pu-details">
+                            <div class="help-pu-title">BIG PADDLE</div>
+                            <div class="help-pu-desc">Enlarges the paddle of whoever hits the power-up first.</div>
+                        </div>
+                    </div>
+                    <div class="help-powerup-item">
+                        <div class="help-pu-icon" style="color: #00aaff; box-shadow: 0 0 10px #00aaff;">❄️</div>
+                        <div class="help-pu-details">
+                            <div class="help-pu-title">FREEZE ENEMY</div>
+                            <div class="help-pu-desc">Stops the opponent's paddle entirely for 3 seconds.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button id="btnCloseHelp" class="menu-btn"
+                style="width: 100%; position: sticky; bottom: 0; background: var(--bg-color); border-top: 1px solid #333; padding-top: 15px;">GOT
+                IT!</button>
+        </div>
+    </div>
+
+    </div>
+
+    <!-- Modular Game Scripts (Order matters for dependencies) -->
+    <script src="js/constants.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/renderer.js"></script>
+    <script src="js/engine.js"></script>
+    <script src="js/cloud.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>
