@@ -36,10 +36,12 @@ const btnCloseStore = document.getElementById('btnCloseStore');
 const storeModal = document.getElementById('storeModal');
 const storeEffectsList = document.getElementById('storeEffectsList');
 
-// Game object dimensions
-const paddleWidth = 15;
-const ballRadius = 8;
-const netWidth = 2;
+// Game object dimensions (Now dynamically scaled)
+let scaleX = 1;
+let scaleY = 1;
+let paddleWidth = 15;
+let ballRadius = 8;
+let netWidth = 2;
 
 // Definitions
 const ALL_ACHIEVEMENTS = {

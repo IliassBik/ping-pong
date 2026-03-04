@@ -27,8 +27,7 @@ function gameLoop() {
 // Control player paddle with mouse
 canvas.addEventListener('mousemove', (e) => {
     let rect = canvas.getBoundingClientRect();
-    let scaleY = canvas.height / rect.height; // Scale relative to CSS size
-    let mouseY = (e.clientY - rect.top) * scaleY;
+    let mouseY = e.clientY - rect.top;
 
     // Move paddle and keep it within bounds
     if (isTwoPlayer && isGameRunning) return; // Disable mouse in 2P for balance
@@ -42,16 +41,14 @@ canvas.addEventListener('mousemove', (e) => {
     player.y = newY;
 });
 
-// Map touch coordinates to internal canvas coordinates (handle CSS scaling)
+// Map touch coordinates to internal canvas coordinates natively
 function getTouchY(touch) {
     let rect = canvas.getBoundingClientRect();
-    let scaleY = canvas.height / rect.height;
-    return (touch.clientY - rect.top) * scaleY;
+    return touch.clientY - rect.top;
 }
 function getTouchX(touch) {
     let rect = canvas.getBoundingClientRect();
-    let scaleX = canvas.width / rect.width;
-    return (touch.clientX - rect.left) * scaleX;
+    return touch.clientX - rect.left;
 }
 
 let activeTouches = {};
@@ -558,6 +555,8 @@ btnStartTwoPlayer.addEventListener('click', () => {
 });
 
 // Initial render calculation based on default paddle size
+// Setup canvas right away
+if (typeof resizeCanvas === 'function') resizeCanvas();
 player.y = canvas.height / 2 - player.height / 2;
 ai.y = canvas.height / 2 - ai.height / 2;
 

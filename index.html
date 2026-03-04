@@ -266,13 +266,10 @@
                     <div class="option-group">
                         <label>Display:</label>
                         <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                            <select id="selectResolution"
-                                style="flex: 1; padding: 10px; background: var(--canvas-bg); color: var(--text-color); border: 2px solid var(--primary-color); font-family: 'Press Start 2P';">
-                                <option value="800x600">800x600</option>
-                                <option value="1000x600">1000x600</option>
-                                <option value="1280x720" selected>1280x720</option>
-                                <option value="fullscreen">Fullscreen</option>
-                            </select>
+                            <div
+                                style="flex: 1; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid #555; color: #aaa; font-size: 0.8rem; text-align: center; border-radius: 8px;">
+                                RESOLUTION: AUTO
+                            </div>
                         </div>
                         <div class="difficulty-buttons">
                             <button id="btnToggleQuality" class="selected">QUALITY: HIGH</button>

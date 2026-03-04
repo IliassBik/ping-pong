@@ -56,7 +56,7 @@ function launchServe() {
     }
 
     let startSpeed = isAdventureMode ? ADVENTURE_LEVELS[currentAdventureLevel].ballSpeed : (isSurvivalMode ? 8 : 4);
-    ball.speed = startSpeed;
+    ball.speed = startSpeed * scaleX; // Adjust speed based on screen width
     ball.velocityX = direction * ball.speed;
     ball.velocityY = (Math.random() > 0.5 ? 1 : -1) * (ball.speed * 0.75);
 
@@ -429,11 +429,12 @@ function update() {
         // Speed up the ball slightly after every hit
         if (isSurvivalMode) {
             // New formula starts at 4 and grows gently at first
-            ball.speed = 4 + (survivalHits * 0.12) + Math.pow(survivalHits / 25, 1.4);
+            let baseSurvSpeed = 4 + (survivalHits * 0.12) + Math.pow(survivalHits / 25, 1.4);
             // Cap survival speed to 25 to remain playable for pros
-            if (ball.speed > 25) ball.speed = 25;
+            if (baseSurvSpeed > 25) baseSurvSpeed = 25;
+            ball.speed = baseSurvSpeed * scaleX;
         } else {
-            ball.speed += 0.5;
+            ball.speed += 0.5 * scaleX;
         }
         rallyHits++;
 
@@ -552,12 +553,12 @@ function spawnRandomObstacle() {
     let oy = canvas.height * 0.1 + (Math.random() * (canvas.height * 0.8));
 
     // Faster movement for survival feel
-    let vx = (Math.random() - 0.5) * 6;
-    let vy = (Math.random() - 0.5) * 6;
+    let vx = ((Math.random() - 0.5) * 6) * scaleX;
+    let vy = ((Math.random() - 0.5) * 6) * scaleY;
 
     if (shapeType === 'rect') {
-        const w = 35 + Math.random() * 30;
-        const h = 55 + Math.random() * 65;
+        const w = (35 + Math.random() * 30) * scaleX;
+        const h = (55 + Math.random() * 65) * scaleY;
         obstacles.push({
             shape: 'rect',
             x: ox, y: oy, w: w, h: h,
@@ -566,7 +567,7 @@ function spawnRandomObstacle() {
             glow: false
         });
     } else {
-        const r = 25 + Math.random() * 30;
+        const r = (25 + Math.random() * 30) * scaleX;
         obstacles.push({
             shape: 'circle',
             x: ox, y: oy, radius: r,

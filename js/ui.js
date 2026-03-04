@@ -636,26 +636,39 @@ btnToggleQuality.addEventListener('click', () => {
     playSound('uiClick');
 });
 
-// Resolution Select
-selectResolution.addEventListener('change', (e) => {
-    let val = e.target.value;
-    if (val === 'fullscreen') {
-        if (canvas.requestFullscreen) {
-            canvas.requestFullscreen();
-        }
-    } else {
-        let parts = val.split('x');
-        canvas.width = parseInt(parts[0]);
-        canvas.height = parseInt(parts[1]);
+// Canvas Resize Logic
+function resizeCanvas() {
+    // Make canvas fill the window natively
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
-        // Ensure paddles stay inside bounds after resize
-        if (player.y + player.height > canvas.height) player.y = canvas.height - player.height;
-        if (ai.y + ai.height > canvas.height) ai.y = canvas.height - ai.height;
-        // Re-center ball if idle
-        if (!isGameRunning) resetBall('player');
+    // Calculate scale ratio relative to design baseline (1280x720)
+    scaleX = canvas.width / 1280;
+    scaleY = canvas.height / 720;
+
+    // Scale paddle and ball base dimensions
+    paddleWidth = Math.max(10, 15 * scaleX);
+    ballRadius = Math.max(5, 8 * scaleX);
+    netWidth = Math.max(1, 2 * scaleX);
+
+    // Apply scaling to Paddle definitions safely
+    player.width = paddleWidth;
+    ai.width = paddleWidth;
+    ball.radius = ballRadius;
+
+    // Re-anchor AI x-coordinate
+    ai.x = canvas.width - paddleWidth - (10 * scaleX);
+
+    // Ensure paddles remain inside new vertical bounds
+    if (player.y + player.height > canvas.height) player.y = Math.max(0, canvas.height - player.height);
+    if (ai.y + ai.height > canvas.height) ai.y = Math.max(0, canvas.height - ai.height);
+
+    // Auto-update preview rendering
+    if (!isGameRunning && typeof updateMenuPreview === 'function') {
+        updateMenuPreview();
     }
-    playSound('uiClick');
-});
+}
+window.addEventListener('resize', resizeCanvas);
 
 // Keyboard Settings (Rebinds)
 const bindingButtons = {
