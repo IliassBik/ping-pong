@@ -667,6 +667,23 @@ function resizeCanvas() {
     if (!isGameRunning && typeof updateMenuPreview === 'function') {
         updateMenuPreview();
     }
+
+    // Handle Mobile Portrait Rotation Warning
+    const rotateOverlay = document.getElementById('rotateOverlay');
+    if (rotateOverlay) {
+        // If device is portrait and on a mobile sized screen
+        if (window.innerHeight > window.innerWidth && window.innerWidth <= 1024) {
+            rotateOverlay.classList.remove('hidden');
+            if (isGameRunning && !isPaused) {
+                isPaused = true;
+                if (settingsModal.classList.contains('hidden')) {
+                    openSettings(); // force settings menu open so game doesn't resume blindly
+                }
+            }
+        } else {
+            rotateOverlay.classList.add('hidden');
+        }
+    }
 }
 window.addEventListener('resize', resizeCanvas);
 
